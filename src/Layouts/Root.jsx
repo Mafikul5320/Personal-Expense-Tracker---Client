@@ -1,10 +1,16 @@
 import React from 'react';
-import HomeLayout from './HomeLayout';
+import { Outlet } from 'react-router';
+import Navber from '../Components/Navber';
+import Footer from '../Components/Footer';
 
 const Root = () => {
     return (
         <div>
-            <HomeLayout />
+            <Navber />
+            <div className='min-h-[calc(100vh-357px)]'>
+                <Outlet />
+            </div>
+            <Footer />
         </div>
     );
 };
