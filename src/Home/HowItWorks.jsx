@@ -43,7 +43,7 @@ const HowItWorks = () => {
                 <div className="relative grid gap-10 md:grid-cols-4 ">
                     {steps.map((step, index) => (
                         <div
-                            className="relative p-6 rounded-3xl backdrop-blur-lg bg-white/10 border-2 border-gray-200 shadow-lg hover:shadow-cyan-500/40 transition-all duration-300 hover:-translate-y-2 text-black "
+                            className="relative p-6 rounded-3xl backdrop-blur-lg bg-white/10 border-2 border-gray-200 shadow-lg hover:shadow-cyan-500/40 transition-all duration-300 hover:-translate-y-2 text-black cursor-pointer"
                         >
                             <div
                                 className={`w-20 h-20 mx-auto flex items-center justify-center rounded-full bg-gradient-to-br ${step.color} text-white text-3xl shadow-lg shadow-white/20`}
