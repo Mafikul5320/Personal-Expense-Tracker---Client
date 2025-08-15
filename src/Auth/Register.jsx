@@ -6,12 +6,18 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import logo from "../assets/logo.png"
 import useAuth from "../Hooks/useAuth";
+import useAxiosSecure from "../Hooks/useAxiosSecure";
+import { useNavigate } from "react-router";
+import { GoogleAuthProvider } from "firebase/auth";
 const Register = () => {
     const { handleSubmit, register, formState: { errors } } = useForm();
     const [preview, setPreview] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const { User } = useAuth();
-    console.log(User)
+    const [RegLoading, setregLoading] = useState(false)
+    const { Register, UpdateUser ,GoogleSignIn} = useAuth();
+    const navigate = useNavigate();
+    const provider = new GoogleAuthProvider();
+    const axiosSecure = useAxiosSecure()
+    // console.log(Register)
 
     const handleImageChange = async (e) => {
         const image = e.target.files[0];
@@ -32,13 +38,92 @@ const Register = () => {
     };
 
     const onSubmit = (data) => {
-        setLoading(true);
         console.log({ ...data, photoURL: preview });
-        setTimeout(() => {
-            Swal.fire("Success", "Account created successfully", "success");
-            setLoading(false);
-        }, 1000);
+        const { displayName, email, profile_img, password, photoURL } = data;
+        setregLoading(false)
+
+
+        console.log(displayName, preview)
+
+        Register(email, password).then(res => {
+            setregLoading(true)
+            console.log(res)
+
+            UpdateUser({
+                displayName,
+                photoURL: preview
+            }).then(async () => {
+
+                const res = await axiosSecure.post('/user', {
+                    displayName,
+                    photoURL: preview,
+                    email,
+                    login_at: new Date().toISOString()
+
+                })
+                console.log(res)
+                if (res.data.insertedId) {
+                    navigate("/")
+                    Swal.fire({
+                        title: "Register Sucessfull!",
+                        icon: "success",
+                        draggable: true
+                    });
+                }
+                setregLoading(true)
+
+            }).catch(error => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Failed to Register",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                console.log(error)
+                setregLoading(true)
+            })
+        }).catch(error => {
+            Swal.fire({
+                icon: "error",
+                title: "Failed to Register",
+                showConfirmButton: false,
+                timer: 1500
+            });
+            console.log(error)
+            setregLoading(true)
+        })
     };
+    const handelLogin = () => {
+    GoogleSignIn(provider).then(async (res) => {
+      const result = res.user;
+      console.log(result?.email)
+      const userInfo = {
+        email: result?.email,
+        displayName: result?.displayName,
+        photoURL: result?.photoURL,
+        role: "user",
+        login_at: new Date().toISOString()
+      }
+      const userData = await axiosSecure.post('/user', userInfo)
+      console.log(userData.data)
+      if (userData.data.insertedId || !userData.data.inserted) {
+        navigate('/')
+        Swal.fire({
+          title: "Register sucessfull",
+          icon: "success",
+          draggable: true
+        });
+      }
+    }).catch(error => {
+      Swal.fire({
+        icon: "error",
+        title: "Failed to Register",
+        showConfirmButton: false,
+        timer: 1500
+      });
+      console.log(error)
+    })
+  }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ece9ff] to-[#f5f0ff] p-6">
@@ -146,10 +231,10 @@ const Register = () => {
                     {/* Register Button */}
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={RegLoading}
                         className="w-full bg-gradient-to-r from-blue-600 to-teal-500 text-white py-3 rounded-lg font-semibold shadow-lg hover:opacity-90 transition-all"
                     >
-                        {loading ? "Registering..." : "Register"}
+                        {RegLoading ? "Registering..." : "Register"}
                     </button>
                 </form>
 
@@ -157,7 +242,7 @@ const Register = () => {
                 <div className="mt-8">
                     <p className="text-center text-gray-500 text-sm mb-4">Or login with</p>
                     <div className="flex flex-col gap-3">
-                        <button className="flex items-center justify-center border border-gray-200 py-2 rounded-lg bg-white shadow-sm hover:shadow-md transition font-semibold">
+                        <button onClick={handelLogin} className="flex items-center justify-center border border-gray-200 py-2 rounded-lg bg-white shadow-sm hover:shadow-md transition font-semibold">
                             <svg aria-label="Google logo" width="21" height="21" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g><path d="m0 0H512V512H0" fill="#fff"></path><path fill="#34a853" d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"></path><path fill="#4285f4" d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57"></path><path fill="#fbbc02" d="m90 341a208 200 0 010-171l63 49q-12 37 0 73"></path><path fill="#ea4335" d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55"></path></g></svg> <span className="pl-1">Login with Google</span>
                         </button>
                     </div>

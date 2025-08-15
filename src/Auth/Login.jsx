@@ -4,19 +4,70 @@ import { FaGoogle, FaEnvelope, FaLock } from "react-icons/fa";
 import { CircleX } from "lucide-react";
 import Swal from "sweetalert2";
 import logo from "../assets/logo.png";
+import useAuth from "../Hooks/useAuth";
+import useAxiosSecure from "../Hooks/useAxiosSecure";
+import { useNavigate } from "react-router";
+import { GoogleAuthProvider } from "firebase/auth";
 
 const Login = () => {
   const { handleSubmit, register, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
+    const { Login, GoogleSignIn } = useAuth();
+  const axiosSecure = useAxiosSecure();
+  const navigate = useNavigate()
+  const [logLoading, setLogLoading] = useState(true)
+  const provider = new GoogleAuthProvider();
 
   const onSubmit = (data) => {
-    setLoading(true);
-    console.log("Login data:", data);
-    setTimeout(() => {
-      Swal.fire("Success", "Logged in successfully", "success");
-      setLoading(false);
-    }, 1000);
+ setLogLoading(false)
+    const { email, password } = data;
+    Login(email, password).then(res => {
+      console.log(res);
+      navigate('/')
+      setLogLoading(true)
+    }).catch(error => {
+      console.log(error)
+      Swal.fire({
+        icon: "error",
+        title: "Failed to Login",
+        showConfirmButton: false,
+        timer: 1500
+      });
+      setLogLoading(true)
+    })
+    console.log(data);
   };
+   const handelLogin = () => {
+    GoogleSignIn(provider).then(async (res) => {
+      const result = res.user;
+      console.log(result?.email)
+      const userInfo = {
+        email: result?.email,
+        displayName: result?.displayName,
+        photoURL: result?.photoURL,
+        role: "user",
+        login_at: new Date().toISOString()
+      }
+      const userData = await axiosSecure.post('/user', userInfo)
+      console.log(userData.data)
+      if (userData.data.insertedId || !userData.data.inserted) {
+        navigate('/')
+        Swal.fire({
+          title: "Login sucessfull!",
+          icon: "success",
+          draggable: true
+        });
+      }
+    }).catch(error => {
+      Swal.fire({
+        icon: "error",
+        title: "Failed to Login",
+        showConfirmButton: false,
+        timer: 1500
+      });
+      console.log(error)
+    })
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ece9ff] to-[#f5f0ff] p-6">
@@ -88,7 +139,7 @@ const Login = () => {
         <div className="mt-8">
           <p className="text-center text-gray-500 text-sm mb-4">Or login with</p>
           <div className="flex flex-col gap-3">
-            <button className="flex items-center justify-center border border-gray-200 py-2 rounded-lg bg-white shadow-sm hover:shadow-md transition font-semibold">
+            <button onClick={handelLogin} className="flex items-center justify-center border border-gray-200 py-2 rounded-lg bg-white shadow-sm hover:shadow-md transition font-semibold">
               <svg
                 aria-label="Google logo"
                 width="21"
