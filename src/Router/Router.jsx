@@ -5,6 +5,8 @@ import DashboardLayout from "../Layouts/DashboardLayout";
 import Dashboard from "../Dashboard/Dashboard";
 import AddExpenseForm from "../Dashboard/AddExpenseForm";
 import ExpenseList from "../Dashboard/ExpenseList";
+import Register from "../Auth/Register";
+import Login from "../Auth/Login";
 
 export const router = createBrowserRouter([
     {
@@ -14,6 +16,14 @@ export const router = createBrowserRouter([
             {
                 path: "/",
                 Component: HomeLayout
+            },
+            {
+                path: "/register",
+                Component: Register
+            },
+            {
+                path: "/login",
+                Component: Login
             }
         ]
     },

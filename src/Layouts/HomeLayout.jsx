@@ -1,3 +1,5 @@
+import Login from '../Auth/Login';
+import Register from '../Auth/Register';
 import HeroSection from '../Home/HeroSection';
 import HowItWorks from '../Home/HowItWorks';
 
