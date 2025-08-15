@@ -23,7 +23,7 @@ const Dashboard = () => {
                     <h2 className="ml-4 text-xl font-semibold">Dashboard</h2>
                 </div>
 
-                <Outlet />
+                <Outlet></Outlet>
             </div>
 
             {/* Sidebar */}

@@ -3,6 +3,7 @@ import Root from "../Layouts/Root";
 import HomeLayout from "../Layouts/HomeLayout";
 import DashboardLayout from "../Layouts/DashboardLayout";
 import Dashboard from "../Dashboard/Dashboard";
+import AddExpenseForm from "../Dashboard/AddExpenseForm";
 
 export const router = createBrowserRouter([
     {
@@ -22,6 +23,10 @@ export const router = createBrowserRouter([
             {
                 path: "/dashboard",
                 Component: DashboardLayout
+            },
+            {
+                path: "add-expense",
+                Component: AddExpenseForm
             }
         ]
     }
