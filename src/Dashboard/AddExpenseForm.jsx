@@ -1,10 +1,13 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { CircleX, Plus, Save, X } from "lucide-react";
+import useAxiosSecure from "../Hooks/useAxiosSecure";
+import Swal from "sweetalert2";
 
 const EXPENSE_CATEGORIES = ["Food", "Transport", "Shopping", "Others"];
 
 const AddExpenseForm = () => {
+    const axiosSecure = useAxiosSecure();
   const {
     register,
     handleSubmit,
@@ -12,8 +15,24 @@ const AddExpenseForm = () => {
     formState: { errors, isSubmitting },
   } = useForm();
 
-  const onSubmit = (formData) => {
+  const onSubmit = async(formData) => {
     console.log(formData);
+    const {title,amount,date,category}=formData;
+    const data ={
+        title,
+        amount,
+        date,
+        category,
+    }
+    const res = await axiosSecure.post("/expense",data);
+    if(res.data.insertedId){
+         Swal.fire({
+        icon: "success",
+        title: "Data Add sucessfull",
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }
     reset();
   };
 
@@ -23,7 +42,7 @@ const AddExpenseForm = () => {
         <div className="bg-white rounded-2xl shadow-lg p-8">
           {/* Header */}
           <div className="flex items-center space-x-3 mb-8">
-            <div className="bg-gradient-to-r from-green-500 to-green-600 p-3 rounded-lg">
+            <div className="bg-gradient-to-r from-blue-500 to-teal-600 text-white p-3 rounded-lg">
               <Plus className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -52,7 +71,7 @@ const AddExpenseForm = () => {
                     message: "Title must be at least 3 characters!",
                   },
                 })}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${
+                className={`w-full px-4 py-3 border rounded-lg ${
                   errors.title ? "border-red-300 bg-red-50" : "border-gray-300"
                 }`}
                 placeholder="e.g., Grocery shopping, Gas station"
@@ -81,7 +100,7 @@ const AddExpenseForm = () => {
                     message: "Amount must be greater than 0",
                   },
                 })}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${
+                className={`w-full px-4 py-3 border rounded-lg ${
                   errors.amount
                     ? "border-red-300 bg-red-50"
                     : "border-gray-300"
@@ -105,7 +124,7 @@ const AddExpenseForm = () => {
                 {...register("category", {
                   required: "Please select a category!",
                 })}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${
+                className={`w-full px-4 py-3 border rounded-lg ${
                   errors.category
                     ? "border-red-300 bg-red-50"
                     : "border-gray-300"
@@ -136,7 +155,7 @@ const AddExpenseForm = () => {
                 {...register("date", {
                   required: "Please select a valid date!",
                 })}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${
+                className={`w-full px-4 py-3 border rounded-lg ${
                   errors.date ? "border-red-300 bg-red-50" : "border-gray-300"
                 }`}
               />
@@ -153,8 +172,9 @@ const AddExpenseForm = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-6 rounded-lg font-medium hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-2"
+                className="flex-1 bg-gradient-to-r from-blue-500 to-teal-600 text-white py-3 px-6 rounded-lg font-medium hover:from-teal-700 hover:to-blue-600 flex items-center justify-center space-x-2"
               >
+                
                 <Save className="h-5 w-5" />
                 <span>{isSubmitting ? "Adding..." : "Add Expense"}</span>
               </button>

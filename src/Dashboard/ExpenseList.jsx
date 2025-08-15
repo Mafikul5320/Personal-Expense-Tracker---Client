@@ -24,7 +24,7 @@ const ExpenseList = () => {
           <h1 className="text-3xl font-bold text-gray-900">All Expenses</h1>
           <p className="text-gray-600 mt-1">Manage and track all your expenses</p>
         </div>
-        <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg">
+        <div className="bg-gradient-to-r from-blue-500 to-teal-600 text-white px-6 py-3 rounded-lg">
           <div className="flex items-center space-x-2">
             <DollarSign className="h-5 w-5" />
             <span className="font-semibold">Total: $57.50</span>
