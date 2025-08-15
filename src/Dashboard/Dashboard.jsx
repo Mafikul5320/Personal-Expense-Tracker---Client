@@ -73,28 +73,6 @@ const Dashboard = () => {
                                 All Expenses
                             </NavLink>
                         </li>
-                        <li>
-                            <NavLink
-                                to="/dashboard/analytics"
-                                className={({ isActive }) =>
-                                    `flex items-center py-3 px-2 rounded-lg ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'}`
-                                }
-                            >
-                                <BarChart4 size={18} className="mr-3" />
-                                Analytics
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink
-                                to="/dashboard/settings"
-                                className={({ isActive }) =>
-                                    `flex items-center py-3 px-2 rounded-lg ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'}`
-                                }
-                            >
-                                <Settings size={18} className="mr-3" />
-                                Settings
-                            </NavLink>
-                        </li>
                     </ul>
 
                     {/* Bottom Logout Button */}

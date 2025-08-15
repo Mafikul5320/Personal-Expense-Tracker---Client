@@ -4,6 +4,7 @@ import HomeLayout from "../Layouts/HomeLayout";
 import DashboardLayout from "../Layouts/DashboardLayout";
 import Dashboard from "../Dashboard/Dashboard";
 import AddExpenseForm from "../Dashboard/AddExpenseForm";
+import ExpenseList from "../Dashboard/ExpenseList";
 
 export const router = createBrowserRouter([
     {
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
             {
                 path: "add-expense",
                 Component: AddExpenseForm
+            },
+            {
+                path: "expenses",
+                Component: ExpenseList
             }
         ]
     }
