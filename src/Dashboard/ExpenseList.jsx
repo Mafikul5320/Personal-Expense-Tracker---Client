@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DollarSign, Search, Filter, Calendar, Edit, Trash2 } from 'lucide-react';
-import { CircleX, Plus, Save, X } from "lucide-react";
+import { Save } from "lucide-react";
 import useAxiosSecure from '../Hooks/useAxiosSecure';
 import { useState } from 'react';
+import Swal from 'sweetalert2';
+import Loading from '../Components/Loading';
 
 
 const ExpenseList = () => {
@@ -22,13 +24,14 @@ const ExpenseList = () => {
 
   }
 
-  const { data: allExpense } = useQuery({
+  const { data: allExpense, isLoading } = useQuery({
     queryKey: ["ExpenseList"],
     queryFn: async () => {
       const res = await axiosSecure.get('/expenses');
       return res.data;
     }
   })
+
   const updateExpenseMutation = useMutation({
     mutationFn: async ({ id, updateData }) => {
       console.log(updateData)
@@ -38,6 +41,12 @@ const ExpenseList = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ExpenseList'] });
       document.getElementById('my_modal_2').close();
+      Swal.fire({
+        icon: "success",
+        title: "Update Sucessfull",
+        showConfirmButton: false,
+        timer: 1500
+      });
     },
   });
   const deleteExpenseMutation = useMutation({
@@ -53,9 +62,40 @@ const ExpenseList = () => {
     },
   });
 
-  const handelDeleted = (id) => {
-    deleteExpenseMutation.mutate(id);
+  if (isLoading) {
+    return <Loading></Loading>
   }
+  const handelDeleted = (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteExpenseMutation.mutate(id, {
+          onSuccess: () => {
+            Swal.fire(
+              "Deleted!",
+              "Your expense has been deleted.",
+              "success"
+            );
+          },
+          onError: () => {
+            Swal.fire(
+              "Error!",
+              "Something went wrong while deleting.",
+              "error"
+            );
+          }
+        });
+      }
+    });
+  };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
