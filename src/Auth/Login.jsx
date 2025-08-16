@@ -45,7 +45,6 @@ const Login = () => {
         email: result?.email,
         displayName: result?.displayName,
         photoURL: result?.photoURL,
-        role: "user",
         login_at: new Date().toISOString()
       }
       const userData = await axiosSecure.post('/user', userInfo)

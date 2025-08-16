@@ -1,11 +1,24 @@
+import { useQuery } from '@tanstack/react-query';
 import { DollarSign, Search, Filter, Calendar, Edit, Trash2 } from 'lucide-react';
+import useAxiosSecure from '../Hooks/useAxiosSecure';
 
 const ExpenseList = () => {
-      const categories = ['Food', 'Transport', 'Shopping', 'Bills'];
-  const dummyExpenses = [
-    { _id: 1, title: 'Groceries', category: '🟢Food', amount: 45.5, date: '2025-08-10' },
-    { _id: 2, title: 'Uber Ride', category: 'Transport', amount: 12.0, date: '2025-08-12' },
-  ];
+  const categories = ['Food', 'Transport', 'Shopping', 'Bills'];
+  const axiosSecure = useAxiosSecure()
+
+  const { data: allExpense } = useQuery({
+    queryKey: ["ExpenseList"],
+    queryFn: async () => {
+      const res = await axiosSecure.get('/expenses');
+      return res.data;
+    }
+  })
+  console.log(allExpense)
+
+  // const dummyExpenses = [
+  //   { _id: 1, title: 'Groceries', category: '🟢Food', amount: 45.5, date: '2025-08-10' },
+  //   { _id: 2, title: 'Uber Ride', category: 'Transport', amount: 12.0, date: '2025-08-12' },
+  // ];
 
   const getCategoryColor = (category) => {
     switch (category) {
@@ -16,8 +29,8 @@ const ExpenseList = () => {
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
-    return (
-  <div className="p-8 space-y-8">
+  return (
+    <div className="p-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -95,7 +108,7 @@ const ExpenseList = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {dummyExpenses.map((expense) => (
+              {allExpense?.map((expense) => (
                 <tr key={expense._id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">{expense.title}</div>
@@ -106,7 +119,7 @@ const ExpenseList = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm font-semibold text-gray-900">${expense.amount.toFixed(2)}</div>
+                    <div className="text-sm font-semibold text-gray-900">${expense?.amount ? Number(expense?.amount).toFixed(2): "0.00"}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">{new Date(expense.date).toLocaleDateString()}</div>
@@ -129,7 +142,7 @@ const ExpenseList = () => {
       </div>
     </div>
 
-    );
+  );
 };
 
 export default ExpenseList;
