@@ -1,10 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DollarSign, Search, Filter, Calendar, Edit, Trash2 } from 'lucide-react';
+import { CircleX, Plus, Save, X } from "lucide-react";
 import useAxiosSecure from '../Hooks/useAxiosSecure';
+import { useState } from 'react';
+
 
 const ExpenseList = () => {
+  const EXPENSE_CATEGORIES = ["Food", "Transport", "Shopping", "Others"];
   const categories = ['Food', 'Transport', 'Shopping', 'Bills'];
-  const axiosSecure = useAxiosSecure()
+  const axiosSecure = useAxiosSecure();
+  const [expenseId, setExpenseId] = useState()
+  const [updateData, setupdateData] = useState()
+  const queryClient = useQueryClient();
+
+  const HandelEdit = async (id) => {
+    console.log(id)
+    setExpenseId(id)
+    document.getElementById('my_modal_2').showModal();
+    const res = await axiosSecure.get(`/expenses?id=${id}`)
+    setupdateData(res?.data)
+
+  }
 
   const { data: allExpense } = useQuery({
     queryKey: ["ExpenseList"],
@@ -13,12 +29,45 @@ const ExpenseList = () => {
       return res.data;
     }
   })
-  console.log(allExpense)
+  const updateExpenseMutation = useMutation({
+    mutationFn: async ({ id, updateData }) => {
+      console.log(updateData)
+      const res = await axiosSecure.put(`/update/${id}`, updateData);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ExpenseList'] });
+      document.getElementById('my_modal_2').close();
+    },
+  });
+  const deleteExpenseMutation = useMutation({
+    mutationFn: async (id) => {
+      const res = await axiosSecure.delete(`/delete/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ExpenseList"] });
+    },
+    onError: (err) => {
+      console.error("Delete failed", err);
+    },
+  });
 
-  // const dummyExpenses = [
-  //   { _id: 1, title: 'Groceries', category: '🟢Food', amount: 45.5, date: '2025-08-10' },
-  //   { _id: 2, title: 'Uber Ride', category: 'Transport', amount: 12.0, date: '2025-08-12' },
-  // ];
+  const handelDeleted = (id) => {
+    deleteExpenseMutation.mutate(id);
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const fromData = new FormData(form);
+    const { title, amount, date, category } = Object.fromEntries(fromData.entries());
+
+    updateExpenseMutation.mutate({
+      id: expenseId,
+      updateData: { title, amount, date, category },
+    });
+  };
 
   const getCategoryColor = (category) => {
     switch (category) {
@@ -93,7 +142,97 @@ const ExpenseList = () => {
           <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">Clear Filters</button>
         </div>
       </div>
+      <dialog id="my_modal_2" className="modal">
+        <div className="modal-box">
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h1 className="text-2xl font-bold text-gray-900 text-center mx-auto pb-5">
+              Update Data
+            </h1>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Expense Title
+                </label>
+                <input
+                  type="text"
+                  // {...register("title")}
+                  name='title'
+                  className={`w-full px-4 py-3 border rounded-lg `}
+                  placeholder="Enter Tittle"
+                  defaultValue={updateData?.title}
+                />
+              </div>
 
+              {/* Amount */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Amount ($)
+                </label>
+                <input
+                  name='amount'
+                  defaultValue={updateData?.amount}
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className={`w-full px-4 py-3 border rounded-lg`}
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  name='category'
+                  // {...register("category")}
+                  className={`w-full px-4 py-3 border rounded-lg`}
+                >
+                  <option value={updateData?.category}>{updateData?.category}</option>
+                  {EXPENSE_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  name='date'
+                  defaultValue={updateData?.date}
+                  // {...register("date")}
+                  className={`w-full px-4 py-3 border rounded-lg`}
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-4 pt-6">
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-teal-600 text-white py-3 px-6 rounded-lg font-medium hover:from-teal-700 hover:to-blue-600 flex items-center justify-center space-x-2"
+                >
+
+                  <Save className="h-5 w-5" />
+                  {/* <span>{isSubmitting ? "Updateing..." : "Update"}</span> */}
+                  Update
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
       {/* Expenses List */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="overflow-x-auto">
@@ -119,17 +258,17 @@ const ExpenseList = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm font-semibold text-gray-900">${expense?.amount ? Number(expense?.amount).toFixed(2): "0.00"}</div>
+                    <div className="text-sm font-semibold text-gray-900">${expense?.amount}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">{new Date(expense.date).toLocaleDateString()}</div>
+                    <div className="text-sm text-gray-900">{new Date(expense?.date).toLocaleDateString()}</div>
                   </td>
                   <td className="px-6 py-4 text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors" title="Edit expense">
+                      <button onClick={() => HandelEdit(expense?._id)} className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors" title="Edit expense">
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors" title="Delete expense">
+                      <button onClick={() => handelDeleted(expense?._id)} className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors" title="Delete expense">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -140,6 +279,7 @@ const ExpenseList = () => {
           </table>
         </div>
       </div>
+
     </div>
 
   );

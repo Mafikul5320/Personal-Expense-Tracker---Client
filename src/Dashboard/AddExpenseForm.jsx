@@ -20,7 +20,7 @@ const AddExpenseForm = () => {
     const {title,amount,date,category}=formData;
     const data ={
         title,
-        amount,
+        amount: Number(amount),
         date,
         category,
     }
